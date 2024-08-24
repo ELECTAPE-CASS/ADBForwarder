@@ -135,24 +135,7 @@ internal static class Program
 
         Console.ForegroundColor = ConsoleColor.DarkGreen;
         Console.WriteLine($"Connected device: {DeviceStringFromDeviceData(e.Device)}");
-        tryForward(e.Device); //Moved from Forward(DeviceData) to loop forwarding attempts.
-    }
-
-    private static bool forwardSuccess = false; //This is jank incarnate. FIX ME!!
-
-    private static void tryForward(DeviceData device) //line 138
-    {
-        while (true)
-        {
-            if (forwardSuccess == true)
-            {
-                Console.WriteLine($"Success!");
-                break;
-            }
-            Forward(device);
-
-            Thread.Sleep(5000); //Prevent log spam while awaiting confirmation. Remove this for the quickest connect at the cost of a lot of "Skipped forwarding device" messages.
-        }
+        Forward(e.Device);
     }
 
     private static void Monitor_DeviceDisconnected(object sender, DeviceDataEventArgs e)
@@ -160,7 +143,6 @@ internal static class Program
         Console.ForegroundColor = ConsoleColor.DarkRed;
         Console.WriteLine($"Disconnected device: {DeviceStringFromDeviceData(e.Device)}");
         Console.ForegroundColor = ConsoleColor.White;
-        forwardSuccess = false; //line 141
     }
 
     private static void Forward(DeviceData device)
@@ -182,6 +164,10 @@ internal static class Program
                     Console.WriteLine("Unauthorized device, please make sure you enabled developer mode on device, " +
                                       "authorized adb connection on the device and then replug usb cable.");
                     Console.ForegroundColor = ConsoleColor.White;
+
+                    //Recurse every 10 seconds to check if device has been authorized
+                    Thread.Sleep(10000);
+                    Forward(device);
                     return;
                 }
 
@@ -204,7 +190,6 @@ internal static class Program
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine($"Successfully forwarded device: {DeviceStringFromDeviceData(deviceData)}");
             Console.ForegroundColor = ConsoleColor.White;
-            forwardSuccess = true; //line 141
 
             return;
         }
