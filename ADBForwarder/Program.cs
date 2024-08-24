@@ -146,12 +146,11 @@ internal static class Program
         {
             if (forwardSuccess == true)
             {
-                Console.WriteLine($"Success!");
                 break;
             }
             Forward(device);
 
-            Thread.Sleep(5000); //Prevent log spam while awaiting confirmation. Remove this for the quickest connect at the cost of a lot of "Skipped forwarding device" messages.
+            Thread.Sleep(10000); //Prevent log spam while awaiting confirmation. Remove this for the quickest connect at the cost of a lot of "Skipped forwarding device" messages.
         }
     }
 
