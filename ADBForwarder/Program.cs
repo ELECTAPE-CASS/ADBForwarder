@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -135,13 +135,32 @@ internal static class Program
 
         Console.ForegroundColor = ConsoleColor.DarkGreen;
         Console.WriteLine($"Connected device: {DeviceStringFromDeviceData(e.Device)}");
-        Forward(e.Device);
+        tryForward(e.Device); //Moved from Forward(DeviceData) to loop forwarding attempts.
+    }
+
+    private static bool forwardSuccess = false; //This is jank incarnate. FIX ME!!
+
+    private static void tryForward(DeviceData device) //line 138
+    {
+        while (true)
+        {
+            if (forwardSuccess == true)
+            {
+                Console.WriteLine($"Success!");
+                break;
+            }
+            Forward(device);
+
+            Thread.Sleep(5000); //Prevent log spam while awaiting confirmation. Remove this for the quickest connect at the cost of a lot of "Skipped forwarding device" messages.
+        }
     }
 
     private static void Monitor_DeviceDisconnected(object sender, DeviceDataEventArgs e)
     {
         Console.ForegroundColor = ConsoleColor.DarkRed;
         Console.WriteLine($"Disconnected device: {DeviceStringFromDeviceData(e.Device)}");
+        Console.ForegroundColor = ConsoleColor.White;
+        forwardSuccess = false; //line 141
     }
 
     private static void Forward(DeviceData device)
@@ -185,6 +204,7 @@ internal static class Program
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine($"Successfully forwarded device: {DeviceStringFromDeviceData(deviceData)}");
             Console.ForegroundColor = ConsoleColor.White;
+            forwardSuccess = true; //line 141
 
             return;
         }
